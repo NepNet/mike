@@ -59,7 +59,48 @@ int main(void) {
 	//load shader
 	Shader shader = shader_load_from_file("resources/shaders/test.vert", "resources/shaders/test.frag");
 
-	//
+	//make a quad
+	unsigned int vbo[2];
+	unsigned int vao;
+
+	glGenBuffers(2, vbo);
+	glGenVertexArrays(1, &vao);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
+
+	//vertex data
+	float vertex_data[] = {
+		//position			//normal	//uv
+		-0.5f, -0.5f, 0,    0,0,0,      0,0,
+		+0.5f, -0.5f, 0,    0,0,0,      0,0,
+		+0.5f, +0.5f, 0,    0,0,0,      0,0,
+		-0.5f, +0.5f, 0,    0,0,0,      0,0,
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+	unsigned int indices[] ={
+		0,1,2,
+		0,2,3
+	};
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindVertexArray(0);
+
+	//init stuff
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glDepthFunc(GL_LESS);
+	glCullFace(GL_BACK);
 
     // This is the render loop
     while (!glfwWindowShouldClose(window)) {
@@ -71,6 +112,10 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float time = (float)glfwGetTime();
+
+    	glUseProgram(shader);
+    	glBindVertexArray(vao);
+    	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -17,5 +17,6 @@ void main()
    col = vec4(aPos + 0.5, 1);
    //Normal = aNormal;
    Normal = aNormal * mat3(transpose(inverse(localToWorld)));
+   gl_Position = vec4(aPos, 1.0);
 
 }
