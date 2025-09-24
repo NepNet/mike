@@ -22,8 +22,11 @@ void ProcessInput(GLFWwindow *window) {
 		glfwSetWindowShouldClose(window, true);
 }
 
+float aspect = 1;
+
 void OnResize(GLFWwindow *window, int width, int height) {
 	glViewport(0, 0, width, height);
+	aspect = (float)width / (float)height;
 }
 
 int main(void) {
@@ -85,10 +88,10 @@ int main(void) {
 	//vertex data
 	float vertex_data[] = {
 		//position			//normal	//uv
-		-0.5f, -0.5f, 0,    0,0,0,      0,0,
-		+0.5f, -0.5f, 0,    0,0,0,      0,0,
-		+0.5f, +0.5f, 0,    0,0,0,      0,0,
-		-0.5f, +0.5f, 0,    0,0,0,      0,0,
+		-0.5f, -0.5f, 0,   0,0,0,      0,0,
+		+0.5f, -0.5f, 0,   0,0,0,      0,0,
+		+0.5f, +0.5f, 0,   0,0,0,      0,0,
+		-0.5f, +0.5f, 0,   0,0,0,      0,0,
 	};
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
 
@@ -104,7 +107,7 @@ int main(void) {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 
 	int localToWorldLoc = glGetUniformLocation(shader, "localToWorld");
 
@@ -119,7 +122,19 @@ int main(void) {
 	memcpy(cam_data.view, GLM_MAT4_IDENTITY, sizeof(mat4));
 	memcpy(cam_data.projection, GLM_MAT4_IDENTITY, sizeof(mat4));
 
-	glm_translate(cam_data.view, (vec3){0.2f,-1.0f,0});
+	//glm_translate(cam_data.view, (vec3){0.0f,-0.1f,-30});
+	vec3 eye = {0,0,-1};
+	glm_quat_look(eye, (vec4){0,0,0,1}, cam_data.view);
+	//for some reason camera movement is inverted
+	float viewPos[3] = {0,0,-2};
+	glm_translate(cam_data.view, viewPos);
+
+	float nearPlane = 0.01f;
+	float farPlane = 1000.0f;
+	float fov = 60 *  0.0174533f;
+	aspect = (float)mode->width / (float)mode->height;
+
+	glm_perspective(fov, aspect, nearPlane, farPlane, cam_data.projection);
 
 	glBindBuffer(GL_UNIFORM_BUFFER, cameraDataBuffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(cam_data), &cam_data, GL_STATIC_DRAW);
@@ -127,7 +142,7 @@ int main(void) {
 
 	glUseProgram(shader);
 	vec4* model = GLM_MAT4_IDENTITY;
-	glm_translate(model, (vec3){0,1.0f,0});
+	glm_translate(model, (vec3){0,0.0f,-1});
 	glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float*)model);
 
     // This is the render loop
