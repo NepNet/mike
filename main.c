@@ -2,12 +2,16 @@
 #include <stdbool.h>
 
 #define ARENA_IMPLEMENTATION
+#include <string.h>
+
 #include "arena.h"
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 
 #include "shader.h"
+
 
 Arena meow;
 
@@ -101,6 +105,30 @@ int main(void) {
 	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);
 	glCullFace(GL_BACK);
+
+	int localToWorldLoc = glGetUniformLocation(shader, "localToWorld");
+
+	unsigned int cameraBlockIndex = glGetUniformBlockIndex(shader, "Camera");
+	glUniformBlockBinding(shader, cameraBlockIndex, 0);
+	unsigned int cameraDataBuffer;
+	glGenBuffers(1, &cameraDataBuffer);
+	struct cameraData {
+		mat4 view,projection;
+	}cam_data;
+
+	memcpy(cam_data.view, GLM_MAT4_IDENTITY, sizeof(mat4));
+	memcpy(cam_data.projection, GLM_MAT4_IDENTITY, sizeof(mat4));
+
+	glm_translate(cam_data.view, (vec3){0.2f,-1.0f,0});
+
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraDataBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(cam_data), &cam_data, GL_STATIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraDataBuffer);
+
+	glUseProgram(shader);
+	vec4* model = GLM_MAT4_IDENTITY;
+	glm_translate(model, (vec3){0,1.0f,0});
+	glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float*)model);
 
     // This is the render loop
     while (!glfwWindowShouldClose(window)) {

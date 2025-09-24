@@ -4,6 +4,7 @@ layout (location = 1) in vec3 aNormal;
 out vec4 col;
 out vec3 Normal;
 
+layout(std140)
 uniform Camera{
    mat4 projection;
    mat4 view;
@@ -17,6 +18,4 @@ void main()
    col = vec4(aPos + 0.5, 1);
    //Normal = aNormal;
    Normal = aNormal * mat3(transpose(inverse(localToWorld)));
-   gl_Position = vec4(aPos, 1.0);
-
 }
