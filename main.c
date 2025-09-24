@@ -18,6 +18,12 @@ Arena meow;
 
 float aspect = 1;
 float viewPos[3] = {0,0,-2};
+struct cameraData {
+	mat4 projection,view;
+}cam_data;
+float nearPlane = 0.01f;
+float farPlane = 100.0f;
+float fov = 60 *  0.0174533f;
 
 void ProcessInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -55,7 +61,8 @@ int main(void) {
     const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
     // Construct the window
-    GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "Mike", monitor, NULL);
+  //  GLFWwindow *window = glfwCreateWindow(mode->width, mode->height, "Mike", monitor, NULL);
+    GLFWwindow *window = glfwCreateWindow(800, 600, "Mike", NULL, NULL);
     if (!window) {
         printf("Failed to create the GLFW window\n");
         glfwTerminate();
@@ -72,9 +79,6 @@ int main(void) {
     glViewport(0, 0, 800, 600);
 
     glfwSetFramebufferSizeCallback(window, OnResize);
-
-    //mat4 look;
-    //glm_lookat(camera.transform.position, (float[3]){0,0,0},(float[3]){0,1,0}, look );
 
 	//load shader
 	Shader shader = shader_load_from_file("resources/shaders/test.vert", "resources/shaders/test.frag");
@@ -128,16 +132,11 @@ int main(void) {
 	glUniformBlockBinding(shader, cameraBlockIndex, 0);
 	unsigned int cameraDataBuffer;
 	glGenBuffers(1, &cameraDataBuffer);
-	struct cameraData {
-		mat4 projection,view;
-	}cam_data;
 
 	memcpy(cam_data.view, GLM_MAT4_IDENTITY, sizeof(mat4));
 	memcpy(cam_data.projection, GLM_MAT4_IDENTITY, sizeof(mat4));
 
-	float nearPlane = 0.01f;
-	float farPlane = 100.0f;
-	float fov = 60 *  0.0174533f;
+
 	aspect = (float)mode->width / (float)mode->height;
 
 	glm_perspective(fov, aspect, nearPlane, farPlane, cam_data.projection);
@@ -157,26 +156,26 @@ int main(void) {
 
         float time = (float)glfwGetTime();
 
+    	memcpy(cam_data.view, GLM_MAT4_IDENTITY, sizeof(mat4));
+    	const float radius = 10.0f;
+    	float camX = sin(time) * radius;
+    	float camZ = cos(time) * radius;
+    	glm_lookat((vec3){camX,0,camZ}, (vec3){0,0,0}, (vec3){0,1,0}, cam_data.view);
+    	glm_perspective(fov, aspect, nearPlane, farPlane, cam_data.projection);
+
+    	glBindBuffer(GL_UNIFORM_BUFFER, cameraDataBuffer);
+    	glBufferData(GL_UNIFORM_BUFFER, sizeof(cam_data), &cam_data, GL_STATIC_DRAW);
+
     	glUseProgram(shader);
     	glBindVertexArray(vao);
     	for (int i =0; i<5; i++) {
     		vec4* model = GLM_MAT4_IDENTITY;
-    		glm_translate(model, (vec3){i%2?i:-i,0.0f,0});
+    		glm_translate(model, (vec3){i*2 - 5,0.0f,0});
     		glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float*)model);
 
     		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     	}
 
-    	//glm_quat_look((vec3){0,0,-1}, (vec4){0,0,0,1}, cam_data.view);
-    	//glm_translate(cam_data.view, viewPos);
-    	memcpy(cam_data.view, GLM_MAT4_IDENTITY, sizeof(mat4));
-    	const float radius = 10.0f;
-    	float camX = sin(glfwGetTime()) * radius;
-    	float camZ = cos(glfwGetTime()) * radius;
-    	glm_lookat((vec3){camX,0,camZ}, (vec3){0,0,0}, (vec3){0,1,0}, cam_data.view);
-
-    	glBindBuffer(GL_UNIFORM_BUFFER, cameraDataBuffer);
-    	glBufferData(GL_UNIFORM_BUFFER, sizeof(cam_data), &cam_data, GL_STATIC_DRAW);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
