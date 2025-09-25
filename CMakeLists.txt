@@ -6,7 +6,8 @@ set(CMAKE_C_STANDARD 11)
 add_executable(mike main.c deps/glad/src/glad.c
         player.c
 shader.c
-        main.c)
+        main.c
+        chunk.c)
 
 add_custom_target(cope
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/resources

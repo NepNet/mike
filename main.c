@@ -13,6 +13,7 @@
 #include "shader.h"
 
 #include "player.h"
+#include "chunk.h"
 
 Arena meow;
 
@@ -101,9 +102,15 @@ void OnMouseMove(GLFWwindow *window, double xPos, double yPos) {
 	player_data->pitch += yOffset;
 }
 
+Chunk *chunk;
+
 int main(void) {
 	//Meow
 	arena_alloc(&meow, 1024 * 1024);
+
+	chunk = malloc(sizeof(Chunk));
+	Chunk_FillWave(chunk);
+
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -179,7 +186,7 @@ int main(void) {
 
 	//init stuff
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);
 	glCullFace(GL_BACK);
 
