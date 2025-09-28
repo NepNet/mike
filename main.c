@@ -111,7 +111,7 @@ int main(void) {
 	chunk = malloc(sizeof(Chunk));
 	Chunk_FillWave(chunk);
 
-
+	glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -166,22 +166,10 @@ int main(void) {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (sizeof(float) * 6));
 	glEnableVertexAttribArray(2);
 
-	//vertex data
-	float vertex_data[] = {
-		//position			//normal	//uv
-		-0.5f, -0.5f, 0, 0, 0, 0, 0, 0,
-		+0.5f, -0.5f, 0, 0, 0, 0, 0, 0,
-		+0.5f, +0.5f, 0, 0, 0, 0, 0, 0,
-		-0.5f, +0.5f, 0, 0, 0, 0, 0, 0,
-	};
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
-
+	#include "cube.h"
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-	unsigned int indices[] = {
-		0, 1, 2,
-		0, 2, 3
-	};
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW);
 	glBindVertexArray(0);
 
 	//init stuff
@@ -218,19 +206,10 @@ int main(void) {
 
 		ProcessInput(window);
 
-
-#define CORNFLOWER_BLUE 0.039F, 0.58F, 0.93F
+		#define CORNFLOWER_BLUE 0.039F, 0.58F, 0.93F
 
 		glClearColor(CORNFLOWER_BLUE, 1.00f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		/*
-		const float radius = 10.0f;
-		float camX = sin(time) * radius;
-		float camZ = cos(time) * radius;
-
-		glm_lookat((vec3){camX,0,camZ}, (vec3){0,0,0}, (vec3){0,1,0}, cam_data.view);*/
 
 		player_get_view(cam_data.view);
 
@@ -246,9 +225,8 @@ int main(void) {
 			glm_translate(model, (vec3){i * 2 - 5, 0.0f, 0});
 			glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float *) model);
 
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, cube_indices_count, GL_UNSIGNED_INT, 0);
 		}
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

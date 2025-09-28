@@ -6,16 +6,16 @@ out vec3 Normal;
 
 layout(std140)
 uniform Camera{
-   mat4 projection;
-   mat4 view;
+    mat4 projection;
+    mat4 view;
 };
 
 uniform mat4 localToWorld;
 
 void main()
 {
-   gl_Position = projection * view * localToWorld * vec4(aPos, 1.0);
-   col = vec4(aPos + 0.5, 1);
-   //Normal = aNormal;
-   Normal = aNormal * mat3(transpose(inverse(localToWorld)));
+    gl_Position = projection * view * localToWorld * vec4(aPos, 1.0);
+    col = vec4(aPos + 0.5, 1);
+    //Normal = aNormal;
+    Normal = aNormal * mat3(transpose(inverse(localToWorld)));
 }
