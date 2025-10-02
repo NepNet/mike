@@ -3,7 +3,7 @@ project(mike C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(mike main.c deps/glad/src/glad.c
+add_executable(mike main.c deps/glad/src/glad.c deps/open-simplex-noise/open-simplex-noise.c
         player.c shader.c main.c
         chunk.c
         texture.c
@@ -23,3 +23,4 @@ target_link_libraries(mike glfw)
 
 target_include_directories(mike PUBLIC deps/glad/include)
 target_include_directories(mike PUBLIC deps/cglm/include)
+target_include_directories(mike PUBLIC deps/open-simplex-noise)

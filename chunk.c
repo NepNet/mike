@@ -5,25 +5,16 @@
 #include "chunk.h"
 
 #include <string.h>
-
 #include "cglm/cglm.h"
 #include "cube.h"
+#include "open-simplex-noise.h"
 
 void Chunk_Create() {
 }
 
 void Chunk_FillWave(Chunk *chunk) {
-	float xStep = (CGLM_PI * 2) / (float) CHUNK_SIZE_X;
-	float zStep = (CGLM_PI * 2) / (float) CHUNK_SIZE_Z;
-	float height = CHUNK_SIZE_Y / 8.0f;
-/*
-	for (int z = 0; z < CHUNK_SIZE_Z; z++) {
-		for (int x = 0; x < CHUNK_SIZE_X; x++) {
-			int y = (int) (sinf((float) x * xStep) * cosf((float) z * zStep) * height + height);
-			chunk->blocks[x][y][z] = 1;
-		}
-	}
-*/
+
+	/*
 	for (int z = 0; z < CHUNK_SIZE_Z; z++) {
 		for (int x = 0; x < CHUNK_SIZE_X; x++) {
 			chunk->blocks[x][0][z] = 1;
@@ -36,7 +27,30 @@ void Chunk_FillWave(Chunk *chunk) {
 				}
 			}
 		}
+	}*/
+
+	struct osn_context *simplex_context;
+	open_simplex_noise(69, &simplex_context);
+
+	double scale = 17.4;
+	double heightScale = 0.2;
+
+	for (int z = 0; z < CHUNK_SIZE_Z; z++) {
+		for (int x = 0; x < CHUNK_SIZE_X; x++) {
+			double h = open_simplex_noise2(simplex_context, (x + chunk->positionX) / scale, (z + chunk->positionZ) / scale);
+
+			int maxY = (int)(h * heightScale * CHUNK_SIZE_Y);
+			chunk->blocks[x][0][z] = 1;
+			for (int y = 0; y < maxY; y++) {
+				chunk->blocks[x][y][z] = 1;
+			}
+			for (int y = maxY; y < CHUNK_SIZE_Y; y++) {
+				chunk->blocks[x][y][z] = 0;
+			}
+			chunk->blocks[x][0][z] = 1;
+		}
 	}
+	open_simplex_noise_free(simplex_context);
 }
 
 void Chunk_CreateMesh(Chunk *chunk, void **vertexData, int *vertexCount, void **indicesData, int *indicesCount) {
