@@ -15,6 +15,8 @@
 #include "player.h"
 #include "chunk.h"
 
+#include "texture.h"
+
 Arena meow;
 
 #define NORMALIZE_RGB(r, g, b) ((r) / 255.0f), ((g) / 255.0f), ((b) / 255.0f)
@@ -108,9 +110,6 @@ int main(void) {
 	//Meow
 	arena_alloc(&meow, 1024 * 1024);
 
-	chunk = malloc(sizeof(Chunk));
-	Chunk_FillWave(chunk);
-
 	glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -150,27 +149,32 @@ int main(void) {
 	//make a quad
 	unsigned int vbo[2];
 	unsigned int vao;
-
 	glGenBuffers(2, vbo);
 	glGenVertexArrays(1, &vao);
-
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
 	glEnableVertexAttribArray(0);
-
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
-
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (sizeof(float) * 6));
 	glEnableVertexAttribArray(2);
 
 	#include "cube.h"
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+
+	chunk = malloc(sizeof(Chunk));
+	Chunk_FillWave(chunk);
+	int vertCount, indicesCount;
+	void *vertData, *indeData;
+	Chunk_CreateMesh(chunk, &vertData, &vertCount, &indeData, &indicesCount);
+	glBufferData(GL_ARRAY_BUFFER, 32 * vertCount, vertData, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_indices), cube_indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * indicesCount, indeData, GL_STATIC_DRAW);
 	glBindVertexArray(0);
+
+	TextureHandle tex = Texture_FromFile("resources/textures/grass.jpg");
+	glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	//init stuff
 	glEnable(GL_DEPTH_TEST);
@@ -220,13 +224,13 @@ int main(void) {
 
 		glUseProgram(shader);
 		glBindVertexArray(vao);
-		for (int i = 0; i < 5; i++) {
-			vec4 *model = GLM_MAT4_IDENTITY;
-			glm_translate(model, (vec3){i * 2 - 5, 0.0f, 0});
-			glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float *) model);
 
-			glDrawElements(GL_TRIANGLES, cube_indices_count, GL_UNSIGNED_INT, 0);
-		}
+		vec4 *model = GLM_MAT4_IDENTITY;
+		glm_translate(model, (vec3){0, 0.0f, 0});
+		glUniformMatrix4fv(localToWorldLoc, 1, GL_FALSE, (float *) model);
+
+		glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

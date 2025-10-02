@@ -15,7 +15,7 @@ void player_get_view(mat4 view) {
 	memcpy(view, GLM_MAT4_IDENTITY, sizeof(mat4));
 
 	if(player_data.pitch > 89.0f)
-		player_data.pitch =  89.0f;
+		player_data.pitch = 89.0f;
 	if(player_data.pitch < -89.0f)
 		player_data.pitch = -89.0f;
 

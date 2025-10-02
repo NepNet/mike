@@ -5,9 +5,9 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#define CHUNK_SIZE_X 2
-#define CHUNK_SIZE_Y 2
-#define CHUNK_SIZE_Z 2
+#define CHUNK_SIZE_X 3
+#define CHUNK_SIZE_Y 4
+#define CHUNK_SIZE_Z 3
 
 struct {
 	unsigned int blocks[CHUNK_SIZE_X][CHUNK_SIZE_Y][CHUNK_SIZE_Z];
@@ -17,6 +17,6 @@ void Chunk_Create();
 
 void Chunk_FillWave(Chunk *chunk);
 
-void Chunk_CreateMesh(Chunk *chunk, void *vertexData, int *vertexCount, void *indicesData, int *indicesCount);
+void Chunk_CreateMesh(Chunk *chunk, void **vertexData, int *vertexCount, void **indicesData, int *indicesCount);
 
 #endif //CHUNK_H
